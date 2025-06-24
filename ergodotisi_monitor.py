@@ -30,10 +30,10 @@ def load_seen_jobs():
     with open(CSV_FILE, newline='', encoding='utf-8') as f:
         return {row[0] for row in csv.reader(f)}
 
-def save_job(job_id, data):
+def save_job(ref_number, data):
     with open(CSV_FILE, mode='a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow([job_id] + data)
+        writer.writerow([ref_number] + data)
 
 def match_keywords(text):
     text = text.lower()
@@ -60,17 +60,20 @@ def main():
         location = location.get_text(strip=True) if location else "Unknown"
 
         job_id = link.split("/")[-1]
+        job_page = requests.get(link)
+        job_soup = BeautifulSoup(job_page.text, 'html.parser')
+        ref_number_tag = job_soup.find(string="Reference Number")
+        ref_number = ref_number_tag.find_next().text.strip() if ref_number_tag else job_id  # fallback to URL ID
         job_text = f"{title} {location}".lower()
 
-        if job_id not in seen_jobs and match_keywords(job_text):
-            new_jobs.append((job_id, title, location, link))
-            save_job(job_id, [title, location, link])
+        if ref_number not in seen_jobs and match_keywords(job_text):
+            new_jobs.append((ref_number, title, location, link))
+            save_job(ref_number, [title, location, link])
 
     if new_jobs:
-        msg = f"🚨 *{len(new_jobs)} new job(s) on Ergodotisi!*\n\n"
-        for i, (job_id, title, loc, link) in enumerate(new_jobs, 1):
-            msg += f"*{i}. {title}*\n📍 {loc}\n🔗 [View Job]({link})\n\n"
-        send_telegram_message(msg)
-
-if __name__ == "__main__":
-    main()
+    msg = f"🚨 *{len(new_jobs)} new job(s) on Ergodotisi!*\n\n"
+    for i, (job_id, title, loc, link) in enumerate(new_jobs, 1):
+        msg += f"*{i}. {title}*\n📍 {loc}\n🔗 [View Job]({link})\n\n"
+    send_telegram_message(msg)
+else:
+    send_telegram_message("✅ No new matching jobs found on Ergodotisi.")
