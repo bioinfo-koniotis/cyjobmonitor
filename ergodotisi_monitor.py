@@ -4,7 +4,6 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import csv
-import time
 import telegram
 
 URL = "https://www.ergodotisi.com/en-CY"
@@ -15,7 +14,7 @@ KEYWORDS = [
     "bioinformatics", "biology", "data analysis", "cancer", "genomics", "research", "machine learning",
     "biobank", "cyprus", "european university cyprus", "university of cyprus", "teacher", "part time",
     "full time", "lecturer", "junior", "entry level", "nicosia", "limassol", "paphos", "larnaca",
-    "chemistry", "biomedical sciences", "biomedical scientist", "medical representative", "medical counseling"
+    "chemistry", "biomedical sciences", "biomedical", "biomedical scientist", "medical representative", "medical counseling"
 ]
 
 # Telegram credentials from GitHub secrets
@@ -49,6 +48,7 @@ def main():
     jobs = soup.find_all("div", class_="listing")
 
     new_jobs = []
+
     for job in jobs:
         title_tag = job.find("a", class_="listing-title")
         if not title_tag:
@@ -60,20 +60,29 @@ def main():
         location = location.get_text(strip=True) if location else "Unknown"
 
         job_id = link.split("/")[-1]
+
+        # Visit job page to extract reference number
         job_page = requests.get(link)
         job_soup = BeautifulSoup(job_page.text, 'html.parser')
         ref_number_tag = job_soup.find(string="Reference Number")
-        ref_number = ref_number_tag.find_next().text.strip() if ref_number_tag else job_id  # fallback to URL ID
+        ref_number = ref_number_tag.find_next().text.strip() if ref_number_tag else job_id
+
         job_text = f"{title} {location}".lower()
 
         if ref_number not in seen_jobs and match_keywords(job_text):
             new_jobs.append((ref_number, title, location, link))
             save_job(ref_number, [title, location, link])
 
+    # Notify result
     if new_jobs:
-    msg = f"🚨 *{len(new_jobs)} new job(s) on Ergodotisi!*\n\n"
-    for i, (job_id, title, loc, link) in enumerate(new_jobs, 1):
-        msg += f"*{i}. {title}*\n📍 {loc}\n🔗 [View Job]({link})\n\n"
-    send_telegram_message(msg)
-else:
-    send_telegram_message("✅ No new matching jobs found on Ergodotisi.")
+        msg = f"🚨 *{len(new_jobs)} new job(s) on Ergodotisi!*\n\n"
+        for i, (job_id, title, loc, link) in enumerate(new_jobs, 1):
+            msg += f"*{i}. {title}*\n📍 {loc}\n🔗 [View Job]({link})\n\n"
+        send_telegram_message(msg)
+    else:
+        send_telegram_message("✅ No new matching jobs found on Ergodotisi.")
+
+# Run this when script is executed
+if __name__ == "__main__":
+    send_telegram_message("🚀 Test: Your bot is working!")
+    main()
