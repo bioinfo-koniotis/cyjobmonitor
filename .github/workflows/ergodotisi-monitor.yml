@@ -2,8 +2,8 @@ name: Ergodotisi Job Monitor
 
 on:
   schedule:
-    - cron: '0 */3 * * *'  # Every 3 hours
-  workflow_dispatch:       # Allow manual run
+    - cron: '0 6,9,12,15,18 UTC'  # Run at 9:00, 12:00, 15:00, 18:00, and 21:00 Cyprus time (UTC+3)
+  workflow_dispatch:  # Allow manual run
 
 jobs:
   monitor:
