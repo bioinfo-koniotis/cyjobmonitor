@@ -12,7 +12,7 @@ CSV_FILE = "ergodotisi_jobs.csv"
 
 # Keywords to match
 KEYWORDS = [
-    "bioinformatics", "biology", "data analysis", "cancer", "genomics", "research", "machine learning",
+    "bioinformatics", "Laboratory", "blood", "Medical", "Remedica","UCY", "Medochemie", "Laboratory Technicians", "biology", "data analysis", "cancer", "genomics", "research", "machine learning",
     "biobank", "cyprus", "european university cyprus", "university of cyprus", "teacher", "part time",
     "full time", "lecturer", "junior", "entry level", "nicosia", "limassol", "paphos", "larnaca",
     "chemistry", "biomedical sciences", "biomedical scientist", "medical representative", "medical counseling"
