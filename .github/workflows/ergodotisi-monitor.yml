@@ -2,7 +2,7 @@ name: Ergodotisi Job Monitor
 
 on:
   schedule:
-    - cron: '0 6,9,12,15,18 UTC'  # Run at 9:00, 12:00, 15:00, 18:00, and 21:00 Cyprus time (UTC+3)
+    - cron: '0 6,9,12,15,18 * * *'  # UTC times (which map to 9:00–21:00 Cyprus)
   workflow_dispatch:  # Allow manual run
 
 jobs:
