@@ -4,8 +4,9 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import csv
-import telegram
+from telegram import Bot
 
+# Website and CSV log file
 URL = "https://www.ergodotisi.com/en-CY"
 CSV_FILE = "ergodotisi_jobs.csv"
 
@@ -14,14 +15,13 @@ KEYWORDS = [
     "bioinformatics", "biology", "data analysis", "cancer", "genomics", "research", "machine learning",
     "biobank", "cyprus", "european university cyprus", "university of cyprus", "teacher", "part time",
     "full time", "lecturer", "junior", "entry level", "nicosia", "limassol", "paphos", "larnaca",
-    "chemistry", "biomedical sciences", "biomedical", "biomedical scientist", "medical representative", "medical counseling"
+    "chemistry", "biomedical sciences", "biomedical scientist", "medical representative", "medical counseling"
 ]
 
-# Telegram credentials from GitHub secrets
+# Telegram setup
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-
-bot = telegram.Bot(token=BOT_TOKEN)
+bot = Bot(token=BOT_TOKEN)
 
 def load_seen_jobs():
     if not os.path.exists(CSV_FILE):
@@ -82,7 +82,7 @@ def main():
     else:
         send_telegram_message("✅ No new matching jobs found on Ergodotisi.")
 
-# Run this when script is executed
+# Test and run main script
 if __name__ == "__main__":
     send_telegram_message("🚀 Test: Your bot is working!")
     main()
