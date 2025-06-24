@@ -10,15 +10,16 @@ from telegram import Bot
 URL = "https://www.ergodotisi.com/en-CY"
 CSV_FILE = "ergodotisi_jobs.csv"
 
-# Keywords to match
+# Keywords to match (must be lowercase for comparison)
 KEYWORDS = [
-    "bioinformatics", "Laboratory", "blood", "Medical", "Remedica","UCY", "Medochemie", "Laboratory Technicians", "biology", "data analysis", "cancer", "genomics", "research", "machine learning",
-    "biobank", "cyprus", "european university cyprus", "university of cyprus", "teacher", "part time",
-    "full time", "lecturer", "junior", "entry level", "nicosia", "limassol", "paphos", "larnaca",
-    "chemistry", "biomedical sciences", "biomedical scientist", "medical representative", "medical counseling"
+    "bioinformatics", "laboratory", "blood", "medical", "remedica", "ucy", "medochemie", "laboratory technicians",
+    "biology", "data analysis", "cancer", "genomics", "research", "machine learning", "biobank", "cyprus",
+    "european university cyprus", "university of cyprus", "teacher", "part time", "full time", "lecturer",
+    "junior", "entry level", "nicosia", "limassol", "paphos", "larnaca", "chemistry", "biomedical sciences",
+    "biomedical scientist", "medical representative", "medical counseling"
 ]
 
-# Telegram setup
+# Telegram bot setup
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 bot = Bot(token=BOT_TOKEN)
@@ -61,19 +62,25 @@ def main():
 
         job_id = link.split("/")[-1]
 
-        # Visit job page to extract reference number
+        # Visit job page to extract reference number and full description
         job_page = requests.get(link)
         job_soup = BeautifulSoup(job_page.text, 'html.parser')
+
         ref_number_tag = job_soup.find(string="Reference Number")
         ref_number = ref_number_tag.find_next().text.strip() if ref_number_tag else job_id
 
-        job_text = f"{title} {location}".lower()
+        # Extract job description content
+        desc_tag = job_soup.find("div", class_="job-description")
+        description = desc_tag.get_text(strip=True) if desc_tag else ""
+
+        # Combine all text for keyword matching
+        job_text = f"{title} {location} {description}".lower()
 
         if ref_number not in seen_jobs and match_keywords(job_text):
             new_jobs.append((ref_number, title, location, link))
             save_job(ref_number, [title, location, link])
 
-    # Notify result
+    # Notify user via Telegram
     if new_jobs:
         msg = f"🚨 *{len(new_jobs)} new job(s) on Ergodotisi!*\n\n"
         for i, (job_id, title, loc, link) in enumerate(new_jobs, 1):
@@ -82,7 +89,7 @@ def main():
     else:
         send_telegram_message("✅ No new matching jobs found on Ergodotisi.")
 
-# Test and run main script
+# Run test and main monitor
 if __name__ == "__main__":
     send_telegram_message("🚀 Test: Your bot is working!")
     main()
